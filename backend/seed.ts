@@ -1,10 +1,10 @@
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import { categories, products } from './src/db/schema';
 import * as schema from './src/db/schema';
 
-const client = createClient({ url: 'file:./local.db' });
+const client = postgres(process.env.DATABASE_URL!);
 const db = drizzle(client, { schema });
 
 async function seed() {
@@ -63,7 +63,7 @@ async function seed() {
 
   console.log('  ✅ 21 products created\n');
   console.log('🎉 Seed complete! Open http://localhost:5173 to see your data.');
-  client.close();
+  await client.end();
 }
 
 seed().catch((err) => {

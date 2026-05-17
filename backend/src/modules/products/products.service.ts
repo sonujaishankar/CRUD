@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, like, or } from 'drizzle-orm';
+import { eq, ilike, or } from 'drizzle-orm';
 import { db } from '../../db';
 import { products } from '../../db/schema';
 import { CreateProductDto, UpdateProductDto } from './products.dto';
@@ -10,8 +10,8 @@ export class ProductsService {
     if (search) {
       return db.query.products.findMany({
         where: or(
-          like(products.name, `%${search}%`),
-          like(products.sku, `%${search}%`),
+          ilike(products.name, `%${search}%`),
+          ilike(products.sku, `%${search}%`),
         ),
         with: { category: true },
         orderBy: (p, { asc }) => [asc(p.name)],
@@ -42,7 +42,7 @@ export class ProductsService {
 
   async update(id: number, dto: UpdateProductDto) {
     await this.findOne(id);
-    const updateData: any = { ...dto, updatedAt: new Date().toISOString() };
+    const updateData: any = { ...dto, updatedAt: new Date() };
     if (dto.price !== undefined) updateData.price = String(dto.price);
     await db.update(products).set(updateData).where(eq(products.id, id));
     return this.findOne(id);
@@ -55,14 +55,14 @@ export class ProductsService {
   }
 
   async getStats() {
-    const allProducts = await db.select().from(products);
+    const allProducts = await db.query.products.findMany();
     const totalProducts = allProducts.length;
     const totalValue = allProducts.reduce(
-      (sum, p) => sum + parseFloat(p.price as string) * (p.quantity as number),
+      (sum, p) => sum + parseFloat(p.price) * p.quantity,
       0,
     );
-    const lowStock = allProducts.filter((p) => (p.quantity as number) <= 5).length;
-    const outOfStock = allProducts.filter((p) => (p.quantity as number) === 0).length;
+    const lowStock = allProducts.filter((p) => p.quantity <= 5).length;
+    const outOfStock = allProducts.filter((p) => p.quantity === 0).length;
     return { totalProducts, totalValue, lowStock, outOfStock };
   }
 }

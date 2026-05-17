@@ -1,30 +1,34 @@
 import {
-  sqliteTable,
-  integer,
+  pgTable,
+  serial,
+  varchar,
   text,
-} from 'drizzle-orm/sqlite-core';
-import { sql, relations } from 'drizzle-orm';
+  integer,
+  numeric,
+  timestamp,
+} from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
-export const categories = sqliteTable('categories', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull().unique(),
+export const categories = pgTable('categories', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull().unique(),
   description: text('description'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const products = sqliteTable('products', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
+export const products = pgTable('products', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 200 }).notNull(),
   description: text('description'),
-  price: text('price').notNull(),
+  price: numeric('price', { precision: 10, scale: 2 }).notNull(),
   quantity: integer('quantity').notNull().default(0),
-  sku: text('sku').unique(),
+  sku: varchar('sku', { length: 100 }).unique(),
   categoryId: integer('category_id').references(() => categories.id, {
     onDelete: 'set null',
   }),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const productsRelations = relations(products, ({ one }) => ({

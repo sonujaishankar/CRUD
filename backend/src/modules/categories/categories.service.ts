@@ -36,7 +36,7 @@ export class CategoriesService {
     await this.findOne(id);
     const [updated] = await db
       .update(categories)
-      .set({ ...dto, updatedAt: new Date().toISOString() })
+      .set({ ...dto, updatedAt: new Date() })
       .where(eq(categories.id, id))
       .returning();
     return updated;
