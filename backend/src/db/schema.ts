@@ -14,7 +14,7 @@ export const categories = pgTable('categories', {
   name: varchar('name', { length: 100 }).notNull().unique(),
   description: text('description'),
   createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull().$onUpdate(() => new Date()),
 });
 
 export const products = pgTable('products', {
@@ -28,7 +28,7 @@ export const products = pgTable('products', {
     onDelete: 'set null',
   }),
   createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull().$onUpdate(() => new Date()),
 });
 
 export const productsRelations = relations(products, ({ one }) => ({

@@ -6,7 +6,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "ts-node -r tsconfig-paths/register src/db/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:seed": "ts-node -r tsconfig-paths/register seed.ts"
   },

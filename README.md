@@ -80,8 +80,9 @@ cd backend
 cp .env.example .env
 # Edit .env — set your DATABASE_URL
 npm install
-npm run db:push      # Creates tables via Drizzle
-npm run start:dev    # Starts on http://localhost:3000
+npm run db:generate   # Generate SQL migration files from schema
+npm run db:migrate    # Apply migrations to the database
+npm run start:dev     # Starts on http://localhost:3000
 ```
 
 ### 3. Frontend setup
@@ -104,6 +105,7 @@ product-inventory/
 │   ├── src/
 │   │   ├── db/
 │   │   │   ├── index.ts          ← DB connection (Drizzle)
+│   │   │   ├── migrate.ts        ← Programmatic migration runner
 │   │   │   └── schema.ts         ← Table definitions
 │   │   ├── modules/
 │   │   │   ├── products/
@@ -155,9 +157,25 @@ React Form
 
 ## What you'll learn from this project
 
-- **Drizzle ORM** schema definition + relations + queries
+- **Drizzle ORM** schema definition + relations + queries + migrations
 - **NestJS** modules, controllers, services, DTOs, validation
 - **React** state management, forms, conditional rendering
 - **Axios** API calls with error handling
 - **React Router** for multi-page navigation
 - **Full loop**: UI → HTTP → Controller → Service → DB → Response → UI
+
+---
+
+## Database Migration Workflow
+
+When you change the schema (`src/db/schema.ts`), follow these steps:
+
+```bash
+# 1. Generate a new SQL migration file
+npm run db:generate
+
+# 2. Apply pending migrations to the database
+npm run db:migrate
+```
+
+Migration files are stored in `drizzle/` and tracked in `drizzle/meta/_journal.json`.

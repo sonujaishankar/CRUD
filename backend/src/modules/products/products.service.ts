@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { eq, ilike, or } from 'drizzle-orm';
 import { db } from '../../db';
 import { products, Product } from '../../db/schema';
@@ -33,16 +33,28 @@ export class ProductsService {
   }
 
   async create(dto: CreateProductDto) {
-    const [product] = await db
-      .insert(products)
-      .values({ ...dto, price: Number(dto.price) })
-      .returning();
-    return this.findOne(product.id);
+    try {
+      const [product] = await db
+        .insert(products)
+        .values({ ...dto, price: Number(dto.price) })
+        .returning();
+      return this.findOne(product.id);
+    } catch (e: any) {
+      if (
+        e.code === '23505' ||
+        e.code === 'SQLITE_CONSTRAINT_UNIQUE' ||
+        e.message?.includes('UNIQUE constraint failed') ||
+        e.message?.includes('unique constraint')
+      ) {
+        throw new ConflictException('SKU already exists');
+      }
+      throw e;
+    }
   }
 
   async update(id: number, dto: UpdateProductDto) {
     await this.findOne(id);
-    const updateData: any = { ...dto, updatedAt: new Date().toISOString() };
+    const updateData: any = { ...dto };
     if (dto.price !== undefined) updateData.price = Number(dto.price);
     await db.update(products).set(updateData).where(eq(products.id, id));
     return this.findOne(id);
