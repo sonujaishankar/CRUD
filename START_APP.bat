@@ -7,23 +7,31 @@ echo   Starting Product Inventory App...
 echo  ===================================
 echo.
 
-echo  [1/2] Building Frontend (React)...
+echo  [1/3] Building Frontend (React)...
 cd /d %~dp0frontend
 call npm run build
 
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo  ❌ Frontend build failed! Cannot start application.
+    echo  [ERROR] Frontend build failed!
     pause
     exit /b %ERRORLEVEL%
 )
 
 echo.
-echo  [2/2] Starting Backend (NestJS)...
-start "Backend - NestJS" cmd /k "cd /d %~dp0backend && npm run start:dev"
+echo  [2/3] Building Backend (NestJS)...
+cd /d %~dp0backend
+call npm run build
 
-timeout /t 5 /nobreak > nul
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo  [ERROR] Backend build failed!
+    pause
+    exit /b %ERRORLEVEL%
+)
 
+echo.
+echo  [3/3] Starting Application...
 echo.
 echo  ===================================
 echo   Application started successfully!
@@ -33,6 +41,9 @@ echo   API Endpoints: http://localhost:3000/api
 echo  ===================================
 echo.
 echo  Opening browser in 3 seconds...
-timeout /t 3 /nobreak > nul
+echo  (Keep this window open to keep the app running!)
+echo.
 
-start http://localhost:3000
+start "" "http://localhost:3000"
+
+node dist/src/main.js
