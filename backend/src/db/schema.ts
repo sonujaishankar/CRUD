@@ -4,31 +4,31 @@ import {
   varchar,
   text,
   integer,
-  numeric,
-  timestamp,
+  doublePrecision,
+  timestamp
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 
 export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 100 }).notNull().unique(),
   description: text('description'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
 });
 
 export const products = pgTable('products', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 200 }).notNull(),
   description: text('description'),
-  price: numeric('price', { precision: 10, scale: 2 }).notNull(),
+  price: doublePrecision('price').notNull(),
   quantity: integer('quantity').notNull().default(0),
   sku: varchar('sku', { length: 100 }).unique(),
   categoryId: integer('category_id').references(() => categories.id, {
     onDelete: 'set null',
   }),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
 });
 
 export const productsRelations = relations(products, ({ one }) => ({

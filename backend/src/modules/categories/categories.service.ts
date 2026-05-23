@@ -27,7 +27,14 @@ export class CategoriesService {
       const [category] = await db.insert(categories).values(dto).returning();
       return category;
     } catch (e: any) {
-      if (e.code === '23505') throw new ConflictException('Category name already exists');
+      if (
+        e.code === '23505' ||
+        e.code === 'SQLITE_CONSTRAINT_UNIQUE' ||
+        e.message?.includes('UNIQUE constraint failed') ||
+        e.message?.includes('unique constraint')
+      ) {
+        throw new ConflictException('Category name already exists');
+      }
       throw e;
     }
   }
@@ -36,7 +43,7 @@ export class CategoriesService {
     await this.findOne(id);
     const [updated] = await db
       .update(categories)
-      .set({ ...dto, updatedAt: new Date() })
+      .set({ ...dto, updatedAt: new Date().toISOString() })
       .where(eq(categories.id, id))
       .returning();
     return updated;
